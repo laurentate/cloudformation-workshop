@@ -1,0 +1,29 @@
+Description: Launch a hello world lambda function
+Parameters:
+  CodeLocationS3Bucket:
+    Type: String
+  CodeLocationS3Key:
+    Type: String
+Resources:
+  HelloWorldLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code: 
+        S3Bucket: !Ref CodeLocationS3Bucket
+        S3Key: !Ref CodeLocationS3Key
+      Handler: hello-lambda.handler
+      Role: !GetAtt HelloWorldLambdaRole.Arn
+      Runtime: nodejs6.10
+  HelloWorldLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal: 
+              Service: lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole

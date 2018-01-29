@@ -1,0 +1,19 @@
+Description: Create a DynamoDB table to store individuals name and email addresses
+Resources:
+  MyDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: Name
+          AttributeType: S
+        - AttributeName: EmailAddress
+          AttributeType: S
+      KeySchema: 
+        - AttributeName: EmailAddress
+          KeyType: HASH
+        - AttributeName: Name
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+

@@ -1,0 +1,78 @@
+Description: Create an autoscaling group of EC2 instances with apache installed
+Parameters:
+  KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+  SSHLocation:
+    Type: String
+Mappings:
+  RegionMap:
+    ap-northeast-1:
+      AMI: ami-da9e2cbc
+    ap-northeast-2:
+      AMI: ami-1196317f
+    ap-south-1:
+      AMI: ami-d5c18eba
+    ap-southeast-1:
+      AMI: ami-c63d6aa5
+    ap-southeast-2:
+      AMI: ami-ff4ea59d
+    ca-central-1:
+      AMI: ami-d29e25b6
+    eu-central-1:
+      AMI: ami-bf2ba8d0
+    eu-west-1:
+      AMI: ami-1a962263
+    eu-west-2:
+      AMI: ami-e7d6c983
+    sa-east-1:
+      AMI: ami-286f2a44
+    us-east-1:
+      AMI: ami-55ef662f
+    us-east-2:
+      AMI: ami-15e9c770
+    us-west-1:
+      AMI: ami-a51f27c5
+    us-west-2:
+      AMI: ami-bf4193c7
+Resources:
+  MyAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones: 
+        - eu-west-1a
+        - eu-west-1b
+      Cooldown: 360
+      DesiredCapacity: 1
+      HealthCheckGracePeriod: 60
+      LaunchConfigurationName: !Ref MyLaunchConfiguration
+      MaxSize: 1
+      MinSize: 1
+  MyLaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !FindInMap 
+        - RegionMap
+        - !Ref 'AWS::Region'
+        - AMI
+      InstanceType: t2.micro
+      SecurityGroups: 
+        - !Ref BaseWebSecurityGroup
+      UserData:
+        !Base64 |
+        #!/bin/bash
+        yum install -y httpd
+        service httpd start
+      KeyName: !Ref KeyPairName
+  BaseWebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow inbound http and ssh
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: 80
+          ToPort: 80
+          IpProtocol: tcp
+        - CidrIp: !Ref SSHLocation
+          FromPort: 22
+          ToPort: 22
+          IpProtocol: tcp

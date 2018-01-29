@@ -1,0 +1,37 @@
+Description: Create EC2 instance in eu-west-1 with apache web server installed
+Parameters:
+  KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+  SSHLocation:
+    Type: String
+Resources:
+  MyWebServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-d834aba1
+      SecurityGroups:
+        - !Ref BaseWebSecurityGroup      
+      UserData:
+        !Base64 |
+          #!/bin/bash
+          yum install -y httpd
+          service httpd start
+      KeyName: !Ref KeyPairName
+  BaseWebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow inbound http and ssh
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: 80
+          ToPort: 80
+          IpProtocol: tcp
+        - CidrIp: !Ref SSHLocation
+          FromPort: 22
+          ToPort: 22
+          IpProtocol: tcp
+Outputs:
+  WebServerAddress:
+    Value: !GetAtt MyWebServer.PublicDnsName
+
